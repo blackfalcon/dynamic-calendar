@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>Have date and set it too!</title>
+        <style>
+            .display-cal-value {
+                margin-top: 20px;
+            }
+
+            .hide {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                margin: -1px;
+                padding: 0;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                border: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <input id="event-date" type="date" class="hide" />
+        <div id="display-cal-value" class="display-cal-value"></div>
+
+        <script>
+            // function that converts month value to named string
+            function utcMonthString(i) {
+                var month;
+                switch(i) {
+                    case 1: month="January"; break;
+                    case 2: month="February"; break;
+                    case 3: month="March"; break;
+                    case 4: month="April"; break;
+                    case 5: month="May"; break;
+                    case 6: month="June"; break;
+                    case 7: month="July"; break;
+                    case 8: month="August"; break;
+                    case 9: month="September"; break;
+                    case 10: month="October"; break;
+                    case 11: month="November"; break;
+                    case 12: month="December"; break;
+                }
+                return month;
+            }
+
+            // modulo expressions to parse date value and return ordinal indicator for date
+            function ordinalSuffix(i) {
+                var modulo10 = i % 10,
+                    modulo100 = i % 100;
+                if (modulo10 == 1 && modulo100 != 11) {
+                    return i + "st";
+                }
+                if (modulo10 == 2 && modulo100 != 12) {
+                    return i + "nd";
+                }
+                if (modulo10 == 3 && modulo100 != 13) {
+                    return i + "rd";
+                }
+                return i + "th";
+            }
+
+            // parse date value and apply ordinal values
+            function displayOrdinalDate(date) {
+                var dateArray = date.split('-'),
+                    year = dateArray[0],
+                    month = dateArray[1],
+                    day = dateArray[2],
+
+                    // updates date value to that of value with ordinal indicator
+                    ordinalDay = ordinalSuffix(Number(day)),
+
+                    // updates month value to that of month name
+                    displayMonth = utcMonthString(Number(month));
+
+                // uncomment the console log to see the returned array
+                //console.log(dateArray);
+
+                return displayMonth + " " + ordinalDay + "," + " " + year;
+            }
+
+            // HTML 5 Calendar input
+            // Addresses time-zone support
+            Date.prototype.setDateInputValue = (function() {
+                var localDate = new Date(this);
+                localDate.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+
+                // Uncomment console log to see value returned in this function
+                //console.log(localDate.toJSON().slice(0,10));
+
+                return localDate.toJSON().slice(0,10);
+            });
+
+            function getSetCurrentDate () {
+                // Set var for HTML5 calendar; target DOM element inject HTML content
+                var calendarInput = document.getElementById('event-date'),
+                    displayCalValue = document.getElementById('display-cal-value');
+
+                // Set input value to current date
+                calendarInput.value = new Date().setDateInputValue();
+
+                // write value to DOM with ordinal date conversion
+                displayCalValue.innerHTML = displayOrdinalDate(calendarInput.value);
+            };
+
+            // change event that updates display date based on input
+            function updateDisplayDateEvent() {
+                var calendarInput = document.getElementById('event-date'),
+                    displayCalValue = document.getElementById('display-cal-value');
+
+                // change event to set new value to DOM;
+                calendarInput.onchange = function() {
+                  var calendarInputDate = calendarInput.value,
+                      defaultValue = new Date().setDateInputValue();
+
+                  // additional support for NaN if user clears date value
+                  if(isNaN(calendarInputDate)) {
+                      displayCalValue.innerHTML = displayOrdinalDate(calendarInputDate);
+                  } else {
+                      calendarInput.value = defaultValue;
+                      displayCalValue.innerHTML = displayOrdinalDate(defaultValue);
+                  }
+                }
+
+                // applied hide class to DOM element when user removes focus on the input element
+                calendarInput.onblur = function() {
+                    calendarInput.className = "hide";
+                }
+
+                // sets focus on input element when user interacts with displayed date
+                displayCalValue.onclick = function() {
+                    var mq = window.matchMedia('(min-width: 769px)');
+
+                    if(mq.matches) {
+                        calendarInput.className = "";
+                    };
+                    calendarInput.focus();
+                }
+            };
+
+            getSetCurrentDate();
+            updateDisplayDateEvent();
+        </script>
+    </body>
+</html>
