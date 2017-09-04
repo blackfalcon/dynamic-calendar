@@ -89,7 +89,7 @@ Again, not totally usable. This is where the `slice()` function helps to only re
 
 ```
 Date.prototype.setDateInputValue = (function() {
-    var localDate = new Date(this);
+    const localDate = new Date(this);
     localDate.setMinutes(this.getMinutes() - this.getTimezoneOffset());
     return localDate.toJSON().slice(0,10);
 });
@@ -100,12 +100,16 @@ At this point we have a date input element with no value assigned to it. The nex
 
 Let's create a new function and call that `getSetCurrentDate`. In here we will do a few simple functions; find the input element and set the value to the current date as learned from the `setDateInputValue()` function.
 
-We then need to create the `calendarInput` variable to that of the DOM element with the ID of `event-date`. Next, we use that variable and the `value` method to set the value of the element using the `new Date` prototype and the `setDateInputValue()` function.
+We then need to create the `calendarInput` variable to that of the DOM element with the ID of `event-date`.
+
+```
+const calendarInput = document.getElementById('event-date');
+```
+
+Next, we use that variable and the `value` method to set the value of the element using the `new Date` prototype and the `setDateInputValue()` function.
 
 ```
 function getSetCurrentDate () {
-    var calendarInput = document.getElementById('event-date');
-
     calendarInput.value = new Date().setDateInputValue();
 };
 ```
@@ -115,7 +119,7 @@ At this point you should have a input element that on refresh will have the curr
 In that same function we need to add another variable that finds the DOM element where we want the date to show up in the view.
 
 ```
-var displayCalValue = document.getElementById('display-cal-value');
+const displayCalValue = document.getElementById('display-cal-value');
 ```
 
 Then we can set the value to that variable and the `innerHTML` method to that of the value of `calendarInput.value`.
@@ -143,7 +147,7 @@ Last, to use this function, we need to return the final value for a month.
 ```
 function utcMonthString(i) {
     // set empty variable
-    var month;
+    let month = '';
 
     // use switch cases to evaluate the value of i
     switch(i) {
@@ -178,8 +182,9 @@ Using a series of `if` statements and determining that the value does not == `11
 
 ```
 function ordinalSuffix(i) {
-    var modulo10 = i % 10,
-        modulo100 = i % 100;
+    const modulo10 = i % 10;
+    const modulo100 = i % 100;
+
     if (modulo10 == 1 && modulo100 != 11) {
         return i + "st";
     }
@@ -219,18 +224,21 @@ The final part of this is to return a string that concatenates all this new data
 
 ```
 function displayOrdinalDate(date) {
-    var dateArray = date.split('-'),
-        year = dateArray[0],
-        month = dateArray[1],
-        day = dateArray[2],
+    const dateArray = date.split('-');
+    const year = dateArray[0];
+    const month = dateArray[1];
+    const day = dateArray[2];
 
-        // updates date value to that of value with ordinal indicator
-        ordinalDay = ordinalSuffix(Number(day)),
+    // updates date value to that of value with ordinal indicator
+    const ordinalDay = ordinalSuffix(Number(day));
 
-        // updates month value to that of month name
-        displayMonth = utcMonthString(Number(month));
+    // updates month value to that of month name
+    const displayMonth = utcMonthString(Number(month));
 
-    return displayMonth + " " + ordinalDay + "," + " " + year;
+    // uncomment the console log to see the returned array
+    //console.log(dateArray);
+
+    return `${displayMonth} ${ordinalDay}, ${year}`;
 }
 ```
 
@@ -242,8 +250,8 @@ Pretty cool, but what about updating the date?
 
 To start wrapping up this experience, we need the view to update every time a user changes the date in the input element.
 
-To do this we will create another function called `updateDisplayDateEvent`. In this function we need to set two new variables, `calendarInput` and
-`displayCalValue`. You may remember these variables from a previous function, but since those variables are not global, we need to reset them.
+To do this we will create another function called `updateDisplayDateEvent`. In this function we use the value from, `calendarInput` and
+`displayCalValue` set earlier in the function.
 
 Next thing we need is an event trigger that will change the DOM to reflect the value of the input element. For this we will enclose another function that will be triggered by the `onchange` event on `calendarInput`.
 
@@ -252,12 +260,11 @@ Inside this scope we need new values for `calendarInputDate` which will be that 
 ```
 // change event that updates display date based on input
 function updateDisplayDateEvent() {
-    var calendarInput = document.getElementById('event-date');
 
     // change event to set new value to DOM;
     calendarInput.onchange = function() {
-      var calendarInputDate = calendarInput.value,
-          defaultValue = new Date().setDateInputValue();
+      const calendarInputDate = calendarInput.value;
+      const defaultValue = new Date().setDateInputValue();
 
       displayCalValue.innerHTML = displayOrdinalDate(calendarInputDate);
     }
@@ -266,11 +273,7 @@ function updateDisplayDateEvent() {
 
 At this point you will have a UI with the current date, and when that date field is updated, this will automatically update the value of the prettified string in the view.
 
-What if the user clears the input data? This will return a `NaN`, not a number. We can guard ourself against this, and if the user clears the date, we then can re-instate the current date using all the tools we already created wrapped in an `if` statement. We also need to reset the `displayCalValue` variable too so that we know where to write the data back to.
-
-```
-var displayCalValue = document.getElementById('display-cal-value');
-```
+What if the user clears the input data? This will return a `NaN`, not a number. We can guard ourself against this, and if the user clears the date, we then can re-instate the current date using all the tools we already created wrapped in an `if` statement. We also need to reset the `displayCalValue` value too so that we know where to write the data back to.
 
 We can use the native function of `isNaN()` to evaluate the number we are getting back from the input element. This function returns a boolean value that the `if` statement will evaluate.
 
@@ -321,7 +324,7 @@ What does this do? Regardless of browser we want to set focus on the element. Bu
 
 ```
 displayCalValue.onclick = function() {
-    var mq = window.matchMedia('(min-width: 769px)');
+    const mq = window.matchMedia('(min-width: 769px)');
 
     if(mq.matches) {
         calendarInput.className = "";
